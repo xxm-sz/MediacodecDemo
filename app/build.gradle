@@ -1,0 +1,82 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.xxm.mediacodecdemo'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.xxm.mediacodecdemo"
+        minSdk 26
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    signingConfigs {
+
+        v811 {
+            storeFile file("../811.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        v311D2 {
+            storeFile file("../xbh.jks")
+            storePassword 'android'
+            keyAlias 'android'
+            keyPassword 'android'
+        }
+        v9630 {
+            storeFile file("../9630.jks")
+            storePassword 'android'
+            keyAlias 'android'
+            keyPassword 'android'
+        }
+        v982 {
+            storePassword 'android'
+            keyAlias 'android'
+            keyPassword 'android'
+            storeFile file('../982.jks')
+        }
+        rk3588 {
+            storeFile file('../rk3588.jks')
+            storePassword 'android'
+            keyAlias 'rk3588'
+            keyPassword 'android'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug{
+            signingConfig signingConfigs.v311D2
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    dataBinding{
+        enable true
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

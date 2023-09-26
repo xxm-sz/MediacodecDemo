@@ -51,8 +51,14 @@ class MainActivity : Activity() {
             override fun surfaceCreated(holder: SurfaceHolder) {
                 Log.d(TAG,"surfaceCreated")
                 surfaceHolder = holder
-                val path="/sdcard/ucspace/video/oceans.mp4"
-                extractor.setDataSource(path, holder.surface)
+                val path="oceans.mp4"
+                extractor.setDataSource(path, holder.surface, callback = {newWidth,newHeight->
+                    binding.surface.layoutParams.apply {
+                        width=newWidth
+                        height=newHeight
+                        binding.surface.layoutParams=this
+                    }
+                })
                 extractor.start()
 
                 audioExtractor.setDataSource(path)

@@ -8,6 +8,7 @@ import android.media.MediaCodec.BufferInfo
 import android.media.MediaExtractor
 import android.media.MediaFormat
 import android.util.Log
+import com.xxm.mediacodecdemo.MyApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -29,9 +30,15 @@ class AudioExtractor {
     private var miniBufferSize = 0
 
 
-    fun setDataSource(filePath: String) {
+    fun setDataSource(filePath: String, isAssert: Boolean = true) {
         extractor = MediaExtractor()
-        extractor.setDataSource(filePath)
+        if (isAssert) {
+            MyApplication.context.assets.openFd(filePath).also {
+                extractor.setDataSource(it.fileDescriptor, it.startOffset, it.length)
+            }
+        } else {
+            extractor.setDataSource(filePath)
+        }
         initData()
     }
 
@@ -64,7 +71,6 @@ class AudioExtractor {
     fun start() {
         GlobalScope.launch(Dispatchers.IO) {
             var isEOS = false
-            val startMs = System.currentTimeMillis()
             audioCodec.start()
             audioTrack.play()
             var buffer: ShortArray = ShortArray(miniBufferSize / 2)
@@ -87,9 +93,11 @@ class AudioExtractor {
                             MediaCodec.INFO_TRY_AGAIN_LATER -> {
                                 // Log.d(TAG,"INFO_TRY_AGAIN_LATER")
                             }
+
                             MediaCodec.INFO_OUTPUT_FORMAT_CHANGED -> {
                                 Log.d(TAG, "INFO_OUTPUT_FORMAT_CHANGED")
                             }
+
                             MediaCodec.INFO_TRY_AGAIN_LATER -> {
                                 Log.d(TAG, "INFO_OUTPUT_BUFFERS_CHANGED")
                             }
@@ -104,7 +112,6 @@ class AudioExtractor {
                     outData.position(0)
                     outData.asShortBuffer().get(buffer, 0, info.size / 2)
                     audioTrack.write(buffer, 0, info.size / 2)
-                    sleepRender(info, startMs)
                     audioCodec.releaseOutputBuffer(outIndex, true)
 
                 }
@@ -119,14 +126,4 @@ class AudioExtractor {
         extractor.release()
     }
 
-    private fun sleepRender(info: BufferInfo, startMs: Long) {
-        val timeDifference = info.presentationTimeUs / 1000 - (System.currentTimeMillis() - startMs)
-        if (timeDifference > 0) {
-            try {
-                Thread.sleep(timeDifference)
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
-        }
-    }
 }

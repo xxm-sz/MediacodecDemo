@@ -14,6 +14,7 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import com.xxm.mediacodecdemo.R
 import com.xxm.mediacodecdemo.databinding.ActivityAudioBinding
+import com.xxm.mediacodecdemo.showToast
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
@@ -71,6 +72,10 @@ class AudioActivity : Activity() {
         bufferSize = AudioRecord.getMinBufferSize(
             sampleRate, channel, pcmBit
         )
+        if (bufferSize<0){
+            showToast("获取最小缓存区大小失败")
+            return
+        }
 
         //需要RECORD_AUDIO权限
         audioRecord = AudioRecord(

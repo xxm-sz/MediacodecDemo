@@ -92,6 +92,11 @@ class TrackActivity : Activity() {
             sampleRate, AudioFormat.CHANNEL_IN_MONO, pcmBit
         )
 
+        if (bufferSize<0){
+            showToast("获取最小缓存区大小失败")
+            return
+        }
+
         audioTrack = AudioTrack.Builder()
             .setAudioAttributes(
                 AudioAttributes.Builder()

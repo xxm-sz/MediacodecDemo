@@ -2,6 +2,7 @@ package com.xxm.mediacodecdemo
 
 import android.app.Application
 import android.content.Context
+import android.widget.Toast
 import kotlin.properties.Delegates
 
 /**
@@ -11,12 +12,17 @@ import kotlin.properties.Delegates
  *since version
  *
  */
-class MyApplication: Application() {
+class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        context=applicationContext
+        context = applicationContext
     }
-    companion object{
+
+    companion object {
         var context: Context by Delegates.notNull()
     }
+}
+
+fun Context.showToast(msg:String){
+    Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
 }

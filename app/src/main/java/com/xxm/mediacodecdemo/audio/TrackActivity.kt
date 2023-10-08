@@ -5,25 +5,20 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.media.*
+import android.media.audiofx.Visualizer
+import android.media.audiofx.Visualizer.OnDataCaptureListener
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.chad.library.adapter.base.BaseQuickAdapter
 import com.xxm.mediacodecdemo.R
-import com.xxm.mediacodecdemo.databinding.ActivityAudioBinding
 import com.xxm.mediacodecdemo.databinding.ActivityTrackBinding
 import com.xxm.mediacodecdemo.showToast
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
+
 
 /**
  *Time:2023/10/7
@@ -53,7 +48,7 @@ class TrackActivity : Activity() {
 
     private lateinit var binding: ActivityTrackBinding
 
-    private val list= mutableListOf<TrackData>()
+    private val list = mutableListOf<TrackData>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,17 +59,17 @@ class TrackActivity : Activity() {
         binding.rvTrack.layoutManager = LinearLayoutManager(this)
         binding.rvTrack.adapter = adapter
         adapter.setOnItemClickListener { adapter, view, position ->
-            if (isPlaying){
+            if (isPlaying) {
                 stopPlay()
-            }else{
+            } else {
                 startPlay((adapter.getItem(position) as TrackData).path)
             }
         }
 
         externalCacheDir?.let {
-            if (it.exists()&&it.listFiles().isNotEmpty()){
+            if (it.exists() && it.listFiles().isNotEmpty()) {
                 it.list().forEach {
-                    if (it.startsWith("audio")){
+                    if (it.startsWith("audio")) {
                         list.add(TrackData(it))
                     }
                 }
@@ -92,7 +87,7 @@ class TrackActivity : Activity() {
             sampleRate, AudioFormat.CHANNEL_IN_MONO, pcmBit
         )
 
-        if (bufferSize<0){
+        if (bufferSize < 0) {
             showToast("获取最小缓存区大小失败")
             return
         }
@@ -119,9 +114,10 @@ class TrackActivity : Activity() {
 
     fun startPlay(path: String) {
         if (isPlaying) return
-        val sourceFile = File(externalCacheDir,path)
+        val sourceFile = File(externalCacheDir, path)
         if (sourceFile.exists()) {
             isPlaying = true
+            getDataToShow()
             job = GlobalScope.launch(Dispatchers.IO) {
                 audioTrack!!.play()
                 val fileInputStream = FileInputStream(sourceFile)
@@ -145,7 +141,7 @@ class TrackActivity : Activity() {
 
     fun stopPlay() {
         isPlaying = false
-     //   job?.cancel()
+        //   job?.cancel()
     }
 
     private fun checkPermissions(): Boolean {
@@ -173,5 +169,41 @@ class TrackActivity : Activity() {
     override fun onDestroy() {
         super.onDestroy()
         job?.cancel()
+        visualizer.enabled = false
     }
+
+    private lateinit var visualizer: Visualizer
+    private var mCount = 60
+
+    private fun getDataToShow() {
+        visualizer = Visualizer(audioTrack.audioSessionId)
+        visualizer.captureSize = Visualizer.getCaptureSizeRange()[1]
+        visualizer.setDataCaptureListener(object : OnDataCaptureListener {
+            override fun onWaveFormDataCapture(visualizer: Visualizer?, waveform: ByteArray?, samplingRate: Int) {
+                println("++++++++++++++")
+            }
+
+            override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
+                val model = FloatArray(fft!!.size / 2 + 1)
+                model[0] = Math.abs(fft!![1].toInt()).toFloat()
+                var j = 1
+
+                var i = 2
+                while (i < mCount * 2) {
+                    model[j] = Math.hypot(fft!![i].toDouble(), fft!![i + 1].toDouble()).toFloat()
+                    i += 2
+                    j++
+                    model[j] = Math.abs(model[j])
+                }
+                model.forEach {
+                    print(it)
+                }
+                runOnUiThread {
+                    binding.visualizeView.onFftDataCapture(model)
+                }
+            }
+        }, Visualizer.getMaxCaptureRate() / 2, false, true)
+        visualizer.enabled = true
+    }
+
 }

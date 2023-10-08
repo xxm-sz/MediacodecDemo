@@ -147,4 +147,6 @@ class AudioActivity : Activity() {
         audioRecord.release()
         job?.cancel()
     }
+
+
 }

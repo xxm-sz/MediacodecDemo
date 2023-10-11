@@ -148,15 +148,18 @@ public  class AudioVisualizeView extends View {
         mStrokeWidth = (mRect.width() - (mSpectrumCount - 1) * mItemMargin) / mSpectrumCount * 1.0f;
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setStyle(Paint.Style.FILL);
-        mPath.moveTo(0, centerY);
-
         for (int i = 0; i < mSpectrumCount; i++) {
-            mPath.lineTo(mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 + mRawAudioBytes[i]);
+//            switch (mOrientation) {
+//                case HORIZONTAL_LINE_TOP:
+                    canvas.drawLine(mRect.width() * i / mSpectrumCount, mRect.height() / 2,mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 - mRawAudioBytes[i], mPaint);
+              //      break;
+//                case HORIZONTAL_LINE_BOTTOM:
+                  canvas.drawLine(mRect.width() * i / mSpectrumCount, mRect.height() / 2,mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 + mRawAudioBytes[i], mPaint);
+//                    break;
+//                default:
+//                    break;
+//            }
         }
-        mPath.lineTo(mRect.width(), centerY);
-        mPath.close();
-        canvas.drawPath(mPath, mPaint);
-        mPath.reset();
     }
 
 

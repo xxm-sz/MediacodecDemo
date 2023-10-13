@@ -5,13 +5,14 @@
 
     </data>
 
-    <FrameLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
 
         <LinearLayout
+            android:id="@+id/llOptions"
             android:layout_margin="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -35,9 +36,16 @@
             android:id="@+id/tvState"
             android:textSize="20sp"
             android:gravity="center"
+            android:layout_alignBottom="@id/llOptions"
             android:textColor="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-    </FrameLayout>
+
+        <com.xxm.mediacodecdemo.audio.AudioVisualizeView
+            android:layout_width="match_parent"
+            android:layout_below="@id/tvState"
+            android:id="@+id/audioVisualizeView"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
 </layout>

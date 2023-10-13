@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.media.audiofx.Visualizer
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -85,6 +86,7 @@ class AudioActivity : Activity() {
             pcmBit,
             bufferSize
         )
+
     }
 
     private fun checkPermissions(): Boolean {
@@ -116,6 +118,7 @@ class AudioActivity : Activity() {
         job?.cancel()
         audioRecord.startRecording()
         job = GlobalScope.launch(Dispatchers.IO) {
+        //getDataToShow()
             val buffer = ByteArray(bufferSize)
             val file = application.externalCacheDir
             val saveFile = File(file, "audio_${System.currentTimeMillis()}.pcm")
@@ -139,6 +142,7 @@ class AudioActivity : Activity() {
         isRecording = false
         audioRecord.stop()
         binding.tvState.text="录音已停止"
+        visualizer.enabled=false
     }
 
     override fun onDestroy() {
@@ -147,6 +151,8 @@ class AudioActivity : Activity() {
         audioRecord.release()
         job?.cancel()
     }
+
+    private lateinit var visualizer: Visualizer
 
 
 }

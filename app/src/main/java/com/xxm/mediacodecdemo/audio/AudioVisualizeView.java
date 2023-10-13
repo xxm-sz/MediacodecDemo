@@ -9,13 +9,14 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 
-public  class AudioVisualizeView extends View {
-
+public class AudioVisualizeView extends View {
+    private static final String TAG = "AudioVisualizeView";
     /**
      * the count of spectrum
      */
@@ -51,7 +52,6 @@ public  class AudioVisualizeView extends View {
     protected float centerX, centerY;
 
 
-
     public AudioVisualizeView(Context context) {
         this(context, null);
     }
@@ -71,10 +71,10 @@ public  class AudioVisualizeView extends View {
 
     private void handleStyleable(Context context, AttributeSet attrs, int defStyle) {
 
-            mColor = Color.WHITE;
-            mSpectrumCount = 60;
-            mSpectrumRatio =1.0f;
-            mItemMargin = 12f;
+        mColor = Color.WHITE;
+        mSpectrumCount = 60;
+        mSpectrumRatio = 1.0f;
+        mItemMargin = 12f;
 
     }
 
@@ -94,12 +94,11 @@ public  class AudioVisualizeView extends View {
     }
 
 
-
-
     public void onFftDataCapture(float[] parseData) {
         if (!isVisualizationEnabled) {
             return;
         }
+        mSpectrumCount = parseData.length;
         mRawAudioBytes = parseData;
         invalidate();
     }
@@ -144,21 +143,13 @@ public  class AudioVisualizeView extends View {
         }
         drawChild(canvas);
     }
+
     protected void drawChild(Canvas canvas) {
         mStrokeWidth = (mRect.width() - (mSpectrumCount - 1) * mItemMargin) / mSpectrumCount * 1.0f;
         mPaint.setStrokeWidth(mStrokeWidth);
         mPaint.setStyle(Paint.Style.FILL);
         for (int i = 0; i < mSpectrumCount; i++) {
-//            switch (mOrientation) {
-//                case HORIZONTAL_LINE_TOP:
-                    canvas.drawLine(mRect.width() * i / mSpectrumCount, mRect.height() / 2,mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 - mRawAudioBytes[i], mPaint);
-              //      break;
-//                case HORIZONTAL_LINE_BOTTOM:
-                  canvas.drawLine(mRect.width() * i / mSpectrumCount, mRect.height() / 2,mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 + mRawAudioBytes[i], mPaint);
-//                    break;
-//                default:
-//                    break;
-//            }
+            canvas.drawLine(mRect.width() * i / mSpectrumCount, mRect.height() / 2, mRect.width() * i / mSpectrumCount, 2 + mRect.height() / 2 - mRawAudioBytes[i], mPaint);
         }
     }
 

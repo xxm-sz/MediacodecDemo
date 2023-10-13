@@ -8,6 +8,7 @@ import android.media.*
 import android.media.audiofx.Visualizer
 import android.media.audiofx.Visualizer.OnDataCaptureListener
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
@@ -141,6 +142,8 @@ class TrackActivity : Activity() {
 
     fun stopPlay() {
         isPlaying = false
+        visualizer.enabled=false
+        visualizer.release()
         //   job?.cancel()
     }
 
@@ -168,8 +171,7 @@ class TrackActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        job?.cancel()
-        visualizer.enabled = false
+        stopPlay()
     }
 
     private lateinit var visualizer: Visualizer
@@ -184,22 +186,29 @@ class TrackActivity : Activity() {
             }
 
             override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
-                val model = FloatArray(fft!!.size / 2 + 1)
-                model[0] = Math.abs(fft!![1].toInt()).toFloat()
-                var j = 1
-
-                var i = 2
-                while (i < mCount * 2) {
-                    model[j] = Math.hypot(fft!![i].toDouble(), fft!![i + 1].toDouble()).toFloat()
-                    i += 2
-                    j++
-                    model[j] = Math.abs(model[j])
+                Log.d(TAG,"采样率：$samplingRate")
+                if (fft==null){
+                    Log.d(TAG,"fft data is null")
+                    visualizer?.enabled=false
+                    return
                 }
-                model.forEach {
-                    print(it)
+
+                val n = fft!!.size
+                val magnitudes = FloatArray(n / 2 + 1)
+                val phases = FloatArray(n / 2 + 1)
+                magnitudes[0] = Math.abs(fft[0].toInt()).toFloat() // DC
+
+                magnitudes[n / 2] = Math.abs(fft[1].toInt()).toFloat() // Nyquist
+
+                phases[0] = 0.also { phases[n / 2] = it.toFloat() }.toFloat()
+                Log.d(TAG, "data length:${n/2}")
+                for (k in 1 until n / 2) {
+                    val i = k * 2
+                    //取频率点实部与虚部的模
+                    magnitudes[k] = Math.hypot(fft!![i].toDouble(), fft!![i + 1].toDouble()).toFloat()
                 }
                 runOnUiThread {
-                    binding.visualizeView.onFftDataCapture(model)
+                    binding.visualizeView.onFftDataCapture(magnitudes)
                 }
             }
         }, Visualizer.getMaxCaptureRate() / 2, false, true)
